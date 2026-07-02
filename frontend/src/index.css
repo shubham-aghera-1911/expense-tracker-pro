@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-body antialiased text-slate-100;
+  background-color: #0e0620;
+  min-height: 100vh;
+}
+
+.light body,
+html.light body {
+  color: #1e1730;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.4);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.6);
+}
+
+/* Base app background: layered aurora glow over deep violet */
+.app-bg {
+  background-color: #0e0620;
+  background-image: radial-gradient(circle at 15% 10%, rgba(139,92,246,0.28), transparent 42%),
+    radial-gradient(circle at 85% 0%, rgba(20,184,166,0.22), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(236,72,153,0.16), transparent 50%);
+  min-height: 100vh;
+}
+
+html.light .app-bg {
+  background-color: #f4f2fb;
+  background-image: radial-gradient(circle at 15% 10%, rgba(139,92,246,0.16), transparent 42%),
+    radial-gradient(circle at 85% 0%, rgba(20,184,166,0.12), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(236,72,153,0.10), transparent 50%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+html.light .glass {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+html.light .glass-strong {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #34d8b5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shimmer-bg {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.12) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 2.5s ease infinite;
+}
+
+.focus-ring {
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
