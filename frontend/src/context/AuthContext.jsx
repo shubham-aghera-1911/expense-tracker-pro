@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../api/axios';
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
@@ -8,37 +8,49 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('etp_token');
+    const token = localStorage.getItem("etp_token");
+
     if (!token) {
       setLoading(false);
       return;
     }
+
+    // Restore cached user immediately
+    const cachedUser = localStorage.getItem("etp_user");
+    if (cachedUser) {
+      try {
+        setUser(JSON.parse(cachedUser));
+      } catch (e) {
+        console.error("Failed to parse cached user:", e);
+      }
+    }
+
     const attempt = async (retriesLeft) => {
       try {
-        const { data } = await api.get('/auth/me');
+        const { data } = await api.get("/auth/me");
+
         setUser(data.data.user);
+        localStorage.setItem("etp_user", JSON.stringify(data.data.user));
       } catch (err) {
         const status = err.response?.status;
+
         if (status === 401 || status === 403) {
-          // Token is genuinely invalid/expired - clear it
-          localStorage.removeItem('etp_token');
-          localStorage.removeItem('etp_user');
+          // Token is actually invalid
+          localStorage.removeItem("etp_token");
+          localStorage.removeItem("etp_user");
+          setUser(null);
           return;
         }
+
         if (retriesLeft > 0) {
-          // No response likely means the backend is cold-starting (Render free tier).
-          // Wait and retry instead of wiping a perfectly valid session.
           await new Promise((resolve) => setTimeout(resolve, 3000));
           return attempt(retriesLeft - 1);
         }
-        // Network still failing after retries - keep the token, just show cached user
-        // so the person isn't booted out; they'll get a fresh check next load.
-        const cachedUser = localStorage.getItem('etp_user');
-        if (cachedUser) {
-          try { setUser(JSON.parse(cachedUser)); } catch { /* ignore parse error */ }
-        }
+
+        console.error("Unable to verify session.");
       }
     };
+
     await attempt(3);
     setLoading(false);
   }, []);
@@ -48,44 +60,67 @@ export function AuthProvider({ children }) {
   }, [loadUser]);
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('etp_token', data.data.token);
-    localStorage.setItem('etp_user', JSON.stringify(data.data.user));
+    const { data } = await api.post("/auth/login", {
+      email,
+      password,
+    });
+
+    localStorage.setItem("etp_token", data.data.token);
+    localStorage.setItem("etp_user", JSON.stringify(data.data.user));
+
     setUser(data.data.user);
+
     return data.data.user;
   };
 
   const register = async (payload) => {
-    const { data } = await api.post('/auth/register', payload);
-    localStorage.setItem('etp_token', data.data.token);
-    localStorage.setItem('etp_user', JSON.stringify(data.data.user));
+    const { data } = await api.post("/auth/register", payload);
+
+    localStorage.setItem("etp_token", data.data.token);
+    localStorage.setItem("etp_user", JSON.stringify(data.data.user));
+
     setUser(data.data.user);
+
     return data.data.user;
   };
 
   const logout = () => {
-    localStorage.removeItem('etp_token');
-    localStorage.removeItem('etp_user');
+    localStorage.removeItem("etp_token");
+    localStorage.removeItem("etp_user");
     setUser(null);
   };
 
   const updateUser = (patch) => {
     setUser((prev) => {
       const updated = { ...prev, ...patch };
-      localStorage.setItem('etp_user', JSON.stringify(updated));
+      localStorage.setItem("etp_user", JSON.stringify(updated));
       return updated;
     });
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        updateUser,
+        isAuthenticated: !!user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+
+  return context;
 }
