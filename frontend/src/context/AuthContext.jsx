@@ -13,15 +13,34 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
-    try {
-      const { data } = await api.get('/auth/me');
-      setUser(data.data.user);
-    } catch (err) {
-      localStorage.removeItem('etp_token');
-      localStorage.removeItem('etp_user');
-    } finally {
-      setLoading(false);
-    }
+    const attempt = async (retriesLeft) => {
+      try {
+        const { data } = await api.get('/auth/me');
+        setUser(data.data.user);
+      } catch (err) {
+        const status = err.response?.status;
+        if (status === 401 || status === 403) {
+          // Token is genuinely invalid/expired - clear it
+          localStorage.removeItem('etp_token');
+          localStorage.removeItem('etp_user');
+          return;
+        }
+        if (retriesLeft > 0) {
+          // No response likely means the backend is cold-starting (Render free tier).
+          // Wait and retry instead of wiping a perfectly valid session.
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          return attempt(retriesLeft - 1);
+        }
+        // Network still failing after retries - keep the token, just show cached user
+        // so the person isn't booted out; they'll get a fresh check next load.
+        const cachedUser = localStorage.getItem('etp_user');
+        if (cachedUser) {
+          try { setUser(JSON.parse(cachedUser)); } catch { /* ignore parse error */ }
+        }
+      }
+    };
+    await attempt(3);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
