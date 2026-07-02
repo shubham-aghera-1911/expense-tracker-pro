@@ -83,7 +83,7 @@ export default function Navbar({ onMenuClick, title }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.97 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-xl glass-strong shadow-glass-lg p-1"
+                  className="absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-xl glass-menu shadow-glass-lg p-1"
                 >
                   <div className="px-3 py-2.5 border-b border-white/10 mb-1">
                     <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name}</p>

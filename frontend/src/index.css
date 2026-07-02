@@ -72,6 +72,23 @@ html.light .glass-strong {
   border: 1px solid rgba(139, 92, 246, 0.18);
 }
 
+/* Popover-style dropdown menus (profile menu, currency switcher) need to fully
+   obscure the page content behind them, not just tint it - a low-opacity glass
+   effect lets background text/headers bleed through and visually clash with
+   the menu's own text. This is intentionally more opaque + more blurred than
+   .glass-strong, which is used for cards where a translucent look is desired. */
+.glass-menu {
+  background: rgba(20, 10, 40, 0.92);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+html.light .glass-menu {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+}
+
 .text-gradient {
   background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #34d8b5 100%);
   -webkit-background-clip: text;
